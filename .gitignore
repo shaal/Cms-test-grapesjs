@@ -26,3 +26,5 @@ public/uploads/*
 !public/uploads/.gitkeep
 content/pages/*
 !content/pages/.gitkeep
+
+.playwright-mcp/
