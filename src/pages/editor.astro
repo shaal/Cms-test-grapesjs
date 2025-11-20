@@ -1,0 +1,607 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="GrapesJS Editor">
+  <style is:global>
+    body {
+      margin: 0;
+      padding: 0;
+    }
+
+    #gjs {
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* GrapesJS custom styling */
+    .gjs-one-bg {
+      background-color: #1a202c;
+    }
+
+    .gjs-two-color {
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .gjs-three-bg {
+      background-color: #2d3748;
+      color: white;
+    }
+
+    .gjs-four-color,
+    .gjs-four-color-h:hover {
+      color: #4299e1;
+    }
+
+    /* Custom blocks styling */
+    .gjs-block {
+      min-height: 80px;
+      padding: 10px;
+    }
+
+    .gjs-block-label {
+      font-size: 13px;
+      line-height: 1.4;
+    }
+  </style>
+
+  <div id="gjs"></div>
+
+  <script>
+    import grapesjs from 'grapesjs';
+    import 'grapesjs/dist/css/grapes.min.css';
+    import 'grapesjs-preset-webpage';
+    import '../components/hero-component.ts';
+    import '../components/side-by-side-component.ts';
+
+    const editor = grapesjs.init({
+      container: '#gjs',
+      height: '100vh',
+      width: 'auto',
+      plugins: ['gjs-preset-webpage'],
+      storageManager: false,
+      assetManager: {
+        upload: '/api/upload',
+        uploadName: 'file',
+        multiUpload: false,
+        autoAdd: true,
+      },
+      canvas: {
+        styles: [
+          'https://cdn.jsdelivr.net/npm/tailwindcss@3.4.1/dist/tailwind.min.css'
+        ]
+      },
+      deviceManager: {
+        devices: [
+          {
+            name: 'Desktop',
+            width: '',
+          },
+          {
+            name: 'Tablet',
+            width: '768px',
+            widthMedia: '768px',
+          },
+          {
+            name: 'Mobile',
+            width: '375px',
+            widthMedia: '375px',
+          },
+        ]
+      },
+      panels: {
+        defaults: [
+          {
+            id: 'layers',
+            el: '.panel__right',
+            resizable: {
+              maxDim: 350,
+              minDim: 200,
+              tc: 0,
+              cl: 1,
+              cr: 0,
+              bc: 0,
+            },
+          },
+          {
+            id: 'panel-switcher',
+            el: '.panel__switcher',
+            buttons: [
+              {
+                id: 'show-layers',
+                active: true,
+                label: 'Layers',
+                command: 'show-layers',
+                togglable: false,
+              },
+              {
+                id: 'show-style',
+                active: true,
+                label: 'Styles',
+                command: 'show-styles',
+                togglable: false,
+              },
+              {
+                id: 'show-traits',
+                active: true,
+                label: 'Settings',
+                command: 'show-traits',
+                togglable: false,
+              },
+            ],
+          },
+          {
+            id: 'panel-devices',
+            el: '.panel__devices',
+            buttons: [
+              {
+                id: 'device-desktop',
+                label: '💻',
+                command: 'set-device-desktop',
+                active: true,
+                togglable: false,
+              },
+              {
+                id: 'device-tablet',
+                label: '📱',
+                command: 'set-device-tablet',
+                togglable: false,
+              },
+              {
+                id: 'device-mobile',
+                label: '📱',
+                command: 'set-device-mobile',
+                togglable: false,
+              },
+            ],
+          },
+          {
+            id: 'panel-options',
+            el: '.panel__options',
+            buttons: [
+              {
+                id: 'save',
+                className: 'btn-save',
+                label: '💾 Save',
+                command: 'save-content',
+                attributes: { title: 'Save content' },
+              },
+              {
+                id: 'preview',
+                className: 'btn-preview',
+                label: '👁️ Preview',
+                command: 'preview',
+                attributes: { title: 'Preview' },
+              },
+              {
+                id: 'fullscreen',
+                className: 'btn-fullscreen',
+                label: '⛶',
+                command: 'fullscreen',
+                attributes: { title: 'Fullscreen' },
+              },
+              {
+                id: 'export',
+                className: 'btn-export',
+                label: '⬇️ Export',
+                command: 'export-template',
+                attributes: { title: 'View code' },
+              },
+            ],
+          },
+        ],
+      },
+      blockManager: {
+        appendTo: '.blocks-container',
+      },
+      layerManager: {
+        appendTo: '.layers-container'
+      },
+      styleManager: {
+        appendTo: '.styles-container',
+      },
+      traitManager: {
+        appendTo: '.traits-container',
+      },
+      selectorManager: {
+        appendTo: '.styles-container',
+      },
+    });
+
+    // Define Hero Component Block
+    editor.BlockManager.add('hero-component', {
+      label: `
+        <div>
+          <div style="font-weight: bold; margin-bottom: 5px;">🎯 Hero Section</div>
+          <div style="font-size: 11px; opacity: 0.8;">Full-width hero with background image</div>
+        </div>
+      `,
+      category: 'Custom Components',
+      content: {
+        type: 'hero-component',
+        components: [],
+      },
+      attributes: { class: 'fa fa-image' }
+    });
+
+    // Define Side-by-Side Component Block
+    editor.BlockManager.add('side-by-side-component', {
+      label: `
+        <div>
+          <div style="font-weight: bold; margin-bottom: 5px;">📱 Side by Side</div>
+          <div style="font-size: 11px; opacity: 0.8;">Image and text layout</div>
+        </div>
+      `,
+      category: 'Custom Components',
+      content: {
+        type: 'side-by-side-component',
+        components: [],
+      },
+    });
+
+    // Define Hero Component Type
+    editor.DomComponents.addType('hero-component', {
+      isComponent: el => el.tagName === 'HERO-COMPONENT',
+      model: {
+        defaults: {
+          tagName: 'hero-component',
+          attributes: {
+            'background-image': '',
+            'heading': 'Welcome to Our Site',
+            'description': 'Discover amazing content and explore what we have to offer',
+            'overlay-opacity': '0.5',
+            'text-align': 'center',
+            'min-height': '500px'
+          },
+          traits: [
+            {
+              type: 'text',
+              label: 'Heading',
+              name: 'heading',
+              changeProp: 1,
+            },
+            {
+              type: 'text',
+              label: 'Description',
+              name: 'description',
+              changeProp: 1,
+            },
+            {
+              type: 'text',
+              label: 'Background Image URL',
+              name: 'background-image',
+              changeProp: 1,
+            },
+            {
+              type: 'select',
+              label: 'Text Align',
+              name: 'text-align',
+              options: [
+                { value: 'left', name: 'Left' },
+                { value: 'center', name: 'Center' },
+                { value: 'right', name: 'Right' },
+              ],
+              changeProp: 1,
+            },
+            {
+              type: 'number',
+              label: 'Overlay Opacity',
+              name: 'overlay-opacity',
+              min: 0,
+              max: 1,
+              step: 0.1,
+              changeProp: 1,
+            },
+            {
+              type: 'text',
+              label: 'Min Height',
+              name: 'min-height',
+              placeholder: '500px',
+              changeProp: 1,
+            },
+          ],
+          droppable: false,
+        },
+      },
+    });
+
+    // Define Side-by-Side Component Type
+    editor.DomComponents.addType('side-by-side-component', {
+      isComponent: el => el.tagName === 'SIDE-BY-SIDE-COMPONENT',
+      model: {
+        defaults: {
+          tagName: 'side-by-side-component',
+          attributes: {
+            'image': '',
+            'image-alt': 'Side by side image',
+            'heading': 'Our Story',
+            'text': 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+            'layout': 'media-first',
+            'bg-color': '#ffffff'
+          },
+          traits: [
+            {
+              type: 'text',
+              label: 'Image URL',
+              name: 'image',
+              changeProp: 1,
+            },
+            {
+              type: 'text',
+              label: 'Image Alt Text',
+              name: 'image-alt',
+              changeProp: 1,
+            },
+            {
+              type: 'text',
+              label: 'Heading',
+              name: 'heading',
+              changeProp: 1,
+            },
+            {
+              type: 'textarea',
+              label: 'Text',
+              name: 'text',
+              changeProp: 1,
+            },
+            {
+              type: 'select',
+              label: 'Layout',
+              name: 'layout',
+              options: [
+                { value: 'media-first', name: 'Image First (Desktop)' },
+                { value: 'media-second', name: 'Image Second (Desktop)' },
+              ],
+              changeProp: 1,
+            },
+            {
+              type: 'color',
+              label: 'Background Color',
+              name: 'bg-color',
+              changeProp: 1,
+            },
+          ],
+          droppable: false,
+        },
+      },
+    });
+
+    // Commands
+    editor.Commands.add('set-device-desktop', {
+      run: editor => editor.setDevice('Desktop')
+    });
+    editor.Commands.add('set-device-tablet', {
+      run: editor => editor.setDevice('Tablet')
+    });
+    editor.Commands.add('set-device-mobile', {
+      run: editor => editor.setDevice('Mobile')
+    });
+
+    // Save command
+    editor.Commands.add('save-content', {
+      run: async (editor) => {
+        const html = editor.getHtml();
+        const css = editor.getCss();
+        const components = editor.getComponents();
+
+        try {
+          const response = await fetch('/api/save', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              html,
+              css,
+              components: JSON.stringify(components),
+            }),
+          });
+
+          const result = await response.json();
+
+          if (result.success) {
+            alert('✅ Content saved successfully! You can now view it on the homepage.');
+          } else {
+            alert('❌ Failed to save content: ' + result.error);
+          }
+        } catch (error) {
+          console.error('Error saving:', error);
+          alert('❌ Error saving content');
+        }
+      },
+    });
+
+    // Export command
+    editor.Commands.add('export-template', {
+      run: (editor) => {
+        const html = editor.getHtml();
+        const css = `<style>${editor.getCss()}</style>`;
+        const fullCode = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script type="module" src="/src/components/hero-component.ts"><\/script>
+  <script type="module" src="/src/components/side-by-side-component.ts"><\/script>
+  ${css}
+</head>
+<body>
+  ${html}
+</body>
+</html>`;
+
+        const modal = editor.Modal;
+        modal.setTitle('Export Code');
+        modal.setContent(`
+          <div style="padding: 20px;">
+            <textarea
+              readonly
+              style="width: 100%; height: 400px; font-family: monospace; font-size: 12px; padding: 10px; border: 1px solid #ccc;"
+            >${fullCode}</textarea>
+          </div>
+        `);
+        modal.open();
+      },
+    });
+
+    // Load saved content on init
+    (async () => {
+      try {
+        const response = await fetch('/api/load');
+        const data = await response.json();
+
+        if (data.html || data.css) {
+          editor.setComponents(data.html);
+          editor.setStyle(data.css);
+        }
+      } catch (error) {
+        console.error('Error loading content:', error);
+      }
+    })();
+
+    // Add custom styles to the editor
+    const style = document.createElement('style');
+    style.innerHTML = `
+      .panel__right {
+        position: fixed;
+        top: 0;
+        right: 0;
+        height: 100vh;
+        width: 300px;
+        background-color: #2d3748;
+        overflow-y: auto;
+        z-index: 10;
+      }
+
+      .panel__switcher {
+        position: fixed;
+        top: 0;
+        right: 300px;
+        background-color: #1a202c;
+        padding: 10px;
+        z-index: 11;
+      }
+
+      .panel__switcher button {
+        margin: 0 5px;
+        padding: 5px 10px;
+        background-color: #4a5568;
+        color: white;
+        border: none;
+        cursor: pointer;
+        border-radius: 3px;
+      }
+
+      .panel__switcher button:hover {
+        background-color: #4299e1;
+      }
+
+      .panel__devices {
+        position: fixed;
+        top: 50px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #1a202c;
+        padding: 10px;
+        border-radius: 5px;
+        z-index: 11;
+        display: flex;
+        gap: 5px;
+      }
+
+      .panel__devices button {
+        padding: 8px 12px;
+        background-color: #4a5568;
+        color: white;
+        border: none;
+        cursor: pointer;
+        border-radius: 3px;
+        font-size: 18px;
+      }
+
+      .panel__devices button:hover,
+      .panel__devices button.gjs-pn-active {
+        background-color: #4299e1;
+      }
+
+      .panel__options {
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        background-color: #1a202c;
+        padding: 10px;
+        border-radius: 5px;
+        z-index: 11;
+        display: flex;
+        gap: 5px;
+      }
+
+      .panel__options button {
+        padding: 8px 15px;
+        background-color: #4a5568;
+        color: white;
+        border: none;
+        cursor: pointer;
+        border-radius: 3px;
+        font-size: 14px;
+      }
+
+      .panel__options button:hover {
+        background-color: #4299e1;
+      }
+
+      .panel__options .btn-save:hover {
+        background-color: #48bb78;
+      }
+
+      .blocks-container,
+      .layers-container,
+      .styles-container,
+      .traits-container {
+        padding: 15px;
+        color: white;
+      }
+
+      .gjs-block {
+        background-color: #4a5568;
+        border: 2px solid #2d3748;
+        color: white;
+      }
+
+      .gjs-block:hover {
+        border-color: #4299e1;
+      }
+
+      .gjs-category-title {
+        background-color: #1a202c;
+        color: white;
+        padding: 10px;
+        font-weight: bold;
+      }
+    `;
+    document.head.appendChild(style);
+
+    // Create panel containers
+    const panelRight = document.createElement('div');
+    panelRight.className = 'panel__right';
+    panelRight.innerHTML = `
+      <div class="blocks-container"></div>
+      <div class="layers-container"></div>
+      <div class="styles-container"></div>
+      <div class="traits-container"></div>
+    `;
+    document.body.appendChild(panelRight);
+
+    const panelSwitcher = document.createElement('div');
+    panelSwitcher.className = 'panel__switcher';
+    document.body.appendChild(panelSwitcher);
+
+    const panelDevices = document.createElement('div');
+    panelDevices.className = 'panel__devices';
+    document.body.appendChild(panelDevices);
+
+    const panelOptions = document.createElement('div');
+    panelOptions.className = 'panel__options';
+    document.body.appendChild(panelOptions);
+  </script>
+</Layout>
