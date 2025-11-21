@@ -47,10 +47,21 @@ import Layout from '../layouts/Layout.astro';
 
   <div id="gjs"></div>
 
+  <!-- Panel containers must exist before GrapesJS initialization -->
+  <div class="panel__right">
+    <div class="blocks-container"></div>
+    <div class="layers-container"></div>
+    <div class="styles-container"></div>
+    <div class="traits-container"></div>
+  </div>
+  <div class="panel__switcher"></div>
+  <div class="panel__devices"></div>
+  <div class="panel__options"></div>
+
   <script>
     import grapesjs from 'grapesjs';
     import 'grapesjs/dist/css/grapes.min.css';
-    import 'grapesjs-preset-webpage';
+    import gjsPresetWebpage from 'grapesjs-preset-webpage';
     import '../components/hero-component.ts';
     import '../components/side-by-side-component.ts';
 
@@ -58,7 +69,7 @@ import Layout from '../layouts/Layout.astro';
       container: '#gjs',
       height: '100vh',
       width: 'auto',
-      plugins: ['gjs-preset-webpage'],
+      plugins: [gjsPresetWebpage],
       storageManager: false,
       assetManager: {
         upload: '/api/upload',
@@ -580,28 +591,5 @@ import Layout from '../layouts/Layout.astro';
       }
     `;
     document.head.appendChild(style);
-
-    // Create panel containers
-    const panelRight = document.createElement('div');
-    panelRight.className = 'panel__right';
-    panelRight.innerHTML = `
-      <div class="blocks-container"></div>
-      <div class="layers-container"></div>
-      <div class="styles-container"></div>
-      <div class="traits-container"></div>
-    `;
-    document.body.appendChild(panelRight);
-
-    const panelSwitcher = document.createElement('div');
-    panelSwitcher.className = 'panel__switcher';
-    document.body.appendChild(panelSwitcher);
-
-    const panelDevices = document.createElement('div');
-    panelDevices.className = 'panel__devices';
-    document.body.appendChild(panelDevices);
-
-    const panelOptions = document.createElement('div');
-    panelOptions.className = 'panel__options';
-    document.body.appendChild(panelOptions);
   </script>
 </Layout>
